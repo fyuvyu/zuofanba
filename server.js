@@ -10,13 +10,20 @@ const crypto = require('crypto');
 
 const ROOT = __dirname;
 const PORT = process.env.PORT || 3000;
+// Serverless（Vercel）：代码目录只读，可写目录只有 /tmp
+const IS_SERVERLESS = !!(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
 // DATA_DIR 可指向持久卷（如 Render Disk / HF Spaces /data），避免免费平台重启丢数据
-const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(ROOT, 'data');
+const DATA_DIR = process.env.DATA_DIR
+  ? path.resolve(process.env.DATA_DIR)
+  : (IS_SERVERLESS ? '/tmp/data' : path.join(ROOT, 'data'));
 const PUB = path.join(ROOT, 'public');
 // UPLOAD_DIR 同理，图片可落到持久卷；对外仍以 /uploads/ 访问
-const UP = process.env.UPLOAD_DIR ? path.resolve(process.env.UPLOAD_DIR) : path.join(PUB, 'uploads');
-fs.mkdirSync(DATA_DIR, { recursive: true });
-fs.mkdirSync(UP, { recursive: true });
+const UP = process.env.UPLOAD_DIR
+  ? path.resolve(process.env.UPLOAD_DIR)
+  : (IS_SERVERLESS ? '/tmp/uploads' : path.join(PUB, 'uploads'));
+// 只读文件系统下 mkdir 可能失败，不能让它阻断启动
+try { fs.mkdirSync(DATA_DIR, { recursive: true }); } catch (e) { console.warn('mkdir DATA_DIR fail:', e.code); }
+try { fs.mkdirSync(UP, { recursive: true }); } catch (e) { console.warn('mkdir UPLOAD_DIR fail:', e.code); }
 
 const DB_FILE = path.join(DATA_DIR, 'db.json');
 const RECIPE_FILE = path.join(DATA_DIR, 'recipes.json');
@@ -103,6 +110,12 @@ async function initStore() {
 
 let saveTimer = null;
 function save() {
+  // Serverless 下响应返回后实例即冻结，定时器不会执行 → 必须立即写，否则丢数据
+  if (IS_SERVERLESS) {
+    if (mongoReady) { writeMongoNow(); return; }
+    writeLocal();
+    return;
+  }
   if (saveTimer) return;
   saveTimer = setTimeout(() => {
     saveTimer = null;
@@ -824,9 +837,19 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-initStore().finally(() => {
-  server.listen(PORT, '0.0.0.0', () => {
-    console.log('做饭吧 v5 已启动: http://localhost:' + PORT);
-    console.log('存储后端: ' + (mongoReady ? ('MongoDB (' + MONGO_DB_NAME + '.' + MONGO_COLL + ')') : ('本地文件 ' + DB_FILE)));
+// Vercel / Serverless：导出请求处理函数，由平台按需调用
+// createServer 返回的是 Server 对象而非函数，需取出真正的 request listener
+const __requestHandler = server.listeners('request')[0];
+module.exports = async (req, res) => {
+  await initStore();
+  return __requestHandler(req, res);
+};
+
+if (!IS_SERVERLESS) {
+  initStore().finally(() => {
+    server.listen(PORT, '0.0.0.0', () => {
+      console.log('做饭吧 v6 已启动: http://localhost:' + PORT);
+      console.log('存储后端: ' + (mongoReady ? ('MongoDB (' + MONGO_DB_NAME + '.' + MONGO_COLL + ')') : ('本地文件 ' + DB_FILE)));
+    });
   });
-});
+}

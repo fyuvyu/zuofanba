@@ -1,6 +1,6 @@
 {
   "name": "zuofanba",
-  "version": "6.0.0",
+  "version": "6.1.0",
   "private": true,
   "description": "做饭吧 —— 互相点菜 / 共享菜单 / 美食广场（Node 服务，可选 MongoDB 持久化）",
   "main": "server.js",
@@ -12,7 +12,7 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "optionalDependencies": {
+  "dependencies": {
     "mongodb": "^6.22.0"
   },
   "license": "MIT"
