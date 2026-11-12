@@ -1,0 +1,14 @@
+{
+  "name": "做饭吧 · 家里的点菜 App",
+  "short_name": "做饭吧",
+  "description": "给家人点菜，对方手机直接收到；共享菜单、美食广场、关注粉丝",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fffaf6",
+  "theme_color": "#ff7a45",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}

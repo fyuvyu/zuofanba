@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: zuofanba
+    runtime: node
+    plan: free          # 免费实例：512MB RAM，约 15 分钟无请求休眠
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+    # 免费实例不支持持久磁盘；data/ 与 public/uploads/ 为临时磁盘，重启即清空。

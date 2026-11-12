@@ -1,0 +1,9 @@
+node_modules/
+npm-debug.log*
+.DS_Store
+*.log
+
+# 运行时数据（不要把个人信息/聊天数据提交到公开仓库）
+data/db.json
+public/uploads/*
+!public/uploads/.gitkeep

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#ff7a45">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="做饭吧">
+<title>做饭吧 · 家里的点菜 App</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="stylesheet" href="/styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍲</text></svg>">
+</head>
+<body class="t-sunset bg-none">
+
+<!-- 登录 / 注册 -->
+<div id="auth" style="display:none">
+  <div class="logo">🍲</div>
+  <h1>做饭吧</h1>
+  <div class="sub">家里的点菜 App · 点给谁，谁就能直接收到</div>
+
+  <div id="authBody"></div>
+  <div class="err" id="authErr"></div>
+
+  <div class="switch" id="authSwitch"></div>
+
+  <div class="tiny muted" style="text-align:center;margin-top:28px;line-height:1.7">
+    手机号只用来识别账号，不会发短信、不会外泄<br>密码加密存储，数据在你自己服务器上
+  </div>
+</div>
+
+<!-- 主应用 -->
+<div id="app" style="display:none">
+  <div class="topbar">
+    <h1 id="pageTitle">首页</h1>
+    <div class="tb-actions" id="tbActions"></div>
+  </div>
+  <div class="wrap"><div class="page" id="view"></div></div>
+  <div class="tabbar" id="tabbar"></div>
+</div>
+
+<div id="layer"><div class="mask" data-close="1"></div>
+  <div id="sheet">
+    <div class="sh-head"><h3 id="shTitle"></h3><button class="icon-btn" data-close="1">✕</button></div>
+    <div class="sh-body" id="shBody"></div>
+    <div class="sh-foot" id="shFoot" style="display:none"></div>
+  </div>
+</div>
+
+<div id="modal"><div class="mask" data-mclose="1"></div><div class="box" id="modalBox"></div></div>
+<div id="toast"></div>
+
+<div id="bootErr" style="display:none;position:fixed;left:0;right:0;top:0;z-index:9999;background:#e3564b;color:#fff;padding:14px;font-size:13px;white-space:pre-wrap;font-family:monospace"></div>
+<script>
+window.addEventListener('error', function (e) {
+  var d = document.getElementById('bootErr');
+  if (d) { d.style.display = 'block'; d.textContent += 'ERR: ' + (e.message || '') + ' @ ' + (e.filename || '') + ':' + (e.lineno || '') + '\n'; }
+});
+window.addEventListener('unhandledrejection', function (e) {
+  var d = document.getElementById('bootErr');
+  if (d) { d.style.display = 'block'; d.textContent += 'REJ: ' + ((e.reason && (e.reason.message || e.reason)) || '') + '\n'; }
+});
+</script>
+<script src="/app1.js?v=4"></script>
+<script src="/app2.js?v=4"></script>
+</body>
+</html>

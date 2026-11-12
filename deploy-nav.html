@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>做饭吧 · 免费部署导航</title>
+<style>
+  :root{
+    --bg:#0f1116; --card:#181b22; --card2:#1f232c; --line:#2b303b;
+    --txt:#e8eaef; --dim:#9aa3b2; --brand:#ff8a4c; --brand2:#ffb347;
+    --ok:#3ddc97; --warn:#ffc043; --bad:#ff6b6b;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--txt);
+    font:15px/1.7 -apple-system,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    padding:28px 18px 60px;
+  }
+  .wrap{max-width:1000px;margin:0 auto}
+  h1{font-size:28px;margin:0 0 6px;letter-spacing:-.5px}
+  h1 .emoji{font-size:32px;margin-right:8px}
+  .sub{color:var(--dim);margin:0 0 4px}
+  .meta{color:#6b7484;font-size:12.5px;margin-bottom:26px}
+
+  .hero{
+    background:linear-gradient(135deg,#241a14,#1a1d24);
+    border:1px solid #3a2a1e; border-radius:16px;
+    padding:18px 20px; margin-bottom:26px;
+  }
+  .hero b{color:var(--brand2)}
+  .hero p{margin:6px 0 0;color:#c9cdd6;font-size:14px}
+
+  h2{font-size:18px;margin:34px 0 12px;padding-left:11px;border-left:4px solid var(--brand)}
+  h2 small{font-weight:400;color:var(--dim);font-size:13px;margin-left:8px}
+
+  /* 推荐大卡 */
+  .pick{
+    display:grid;grid-template-columns:1fr;gap:14px;
+  }
+  @media(min-width:760px){.pick{grid-template-columns:1fr 1fr}}
+  .pcard{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:18px 20px;position:relative;transition:.15s;
+  }
+  .pcard:hover{border-color:#4a5262;transform:translateY(-2px)}
+  .pcard.primary{border-color:#5a3a24;background:linear-gradient(160deg,#20180f,#181b22)}
+  .badge{
+    position:absolute;top:-9px;left:16px;background:var(--brand);color:#1a1206;
+    font-size:11.5px;font-weight:700;padding:2px 10px;border-radius:20px;
+  }
+  .pcard h3{margin:4px 0 2px;font-size:17px;display:flex;align-items:center;gap:8px}
+  .pcard h3 .free{font-size:11px;font-weight:600;padding:1px 7px;border-radius:5px;
+    background:rgba(61,220,151,.14);color:var(--ok);border:1px solid rgba(61,220,151,.3)}
+  .pcard h3 .paid{font-size:11px;font-weight:600;padding:1px 7px;border-radius:5px;
+    background:rgba(255,107,107,.12);color:var(--bad);border:1px solid rgba(255,107,107,.3)}
+  .pcard .spec{color:var(--dim);font-size:13px;margin:8px 0 14px;line-height:1.65}
+  .pcard .spec b{color:#dfe3ea;font-weight:600}
+
+  a.btn{
+    display:inline-flex;align-items:center;gap:7px;
+    background:var(--brand);color:#1a1206;text-decoration:none;
+    font-weight:700;font-size:14px;padding:9px 16px;border-radius:9px;
+    transition:.15s;border:none;
+  }
+  a.btn:hover{background:#ffa06a}
+  a.btn.ghost{background:transparent;color:var(--brand2);border:1px solid #5a3a24}
+  a.btn.ghost:hover{background:rgba(255,138,76,.1)}
+  .btns{display:flex;gap:9px;flex-wrap:wrap}
+
+  /* 对比表 */
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+  table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:680px}
+  th,td{padding:11px 13px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:var(--card2);font-weight:600;color:#c2c8d4;white-space:nowrap;font-size:12.5px}
+  tr:last-child td{border-bottom:none}
+  td b{color:#fff}
+  .y{color:var(--ok);font-weight:600}
+  .n{color:var(--bad);font-weight:600}
+  .w{color:var(--warn);font-weight:600}
+  td a{color:var(--brand2);text-decoration:none;border-bottom:1px dotted #6b4a30}
+  td a:hover{color:#ffd08a}
+  .tag{font-size:11px;padding:1px 6px;border-radius:4px;white-space:nowrap}
+  .tag.s{background:rgba(61,220,151,.14);color:var(--ok)}
+  .tag.m{background:rgba(255,192,67,.14);color:var(--warn)}
+  .tag.x{background:rgba(255,107,107,.12);color:var(--bad)}
+
+  /* 步骤 */
+  .steps{counter-reset:s;list-style:none;padding:0;margin:0}
+  .steps li{
+    counter-increment:s;position:relative;padding:0 0 16px 40px;
+    border-left:2px solid var(--line);margin-left:13px;
+  }
+  .steps li:last-child{border-left-color:transparent;padding-bottom:0}
+  .steps li::before{
+    content:counter(s);position:absolute;left:-14px;top:0;
+    width:26px;height:26px;border-radius:50%;background:var(--brand);color:#1a1206;
+    font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;
+  }
+  .steps li b{display:block;margin-bottom:2px;font-size:14.5px}
+  .steps li span{color:var(--dim);font-size:13.5px}
+  code{
+    background:#252a34;padding:1.5px 6px;border-radius:5px;
+    font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;color:#ffc48a;
+  }
+
+  .note{
+    background:rgba(255,192,67,.06);border:1px solid rgba(255,192,67,.22);
+    border-radius:11px;padding:14px 17px;font-size:13.5px;color:#e2d5b8;margin:14px 0;
+  }
+  .note b{color:var(--warn)}
+  .warnbox{
+    background:rgba(255,107,107,.07);border:1px solid rgba(255,107,107,.25);
+    border-radius:11px;padding:14px 17px;font-size:13.5px;color:#f0c9c9;margin:14px 0;
+  }
+  .warnbox b{color:var(--bad)}
+  .footer{margin-top:40px;padding-top:18px;border-top:1px solid var(--line);
+    color:#6b7484;font-size:12px;line-height:1.8}
+  .kbd{display:inline-block;background:#252a34;border:1px solid var(--line);
+    border-bottom-width:2px;border-radius:5px;padding:0 6px;font-size:12px;color:#cfd5e0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1><span class="emoji">🍲</span>做饭吧 · 免费部署导航</h1>
+  <p class="sub">所有链接都可以直接点开。按「能不能真免费用起来」排序，不是按名气排。</p>
+  <p class="meta">额度信息核实自各平台官方定价页 / 官方文档 · 核实日期 2026-11-12 · 免费政策经常变，点进去再看一眼</p>
+
+  <div class="hero">
+    <b>先看这一句：</b>这个项目是「常驻 Node 服务 + 要写文件」，所以
+    Vercel、Netlify、Cloudflare Pages、GitHub Pages <b>全都不行</b>（它们没有长驻进程，也不能写磁盘）。
+    <p>下面只列真正能跑的。想免费用起来，<b>首选 Render</b>，官方文档明确写了免费部署不需要绑卡。</p>
+  </div>
+
+  <h2>立刻可用 <small>推荐顺序</small></h2>
+  <div class="pick">
+
+    <div class="pcard primary">
+      <span class="badge">首选 · 不用绑卡</span>
+      <h3>Render <span class="free">免费</span></h3>
+      <p class="spec">
+        免费 Web Service：<b>512MB 内存</b>、<b>每月 750 实例小时</b><br>
+        约 <b>15 分钟</b>没人访问会休眠，有请求自动唤醒（约 1 分钟）<br>
+        磁盘<b>是临时的</b>，重启或重新部署数据会清空
+      </p>
+      <div class="btns">
+        <a class="btn" href="https://dashboard.render.com/register" target="_blank" rel="noopener">① 注册 Render →</a>
+        <a class="btn ghost" href="https://dashboard.render.com/select-repo?type=web" target="_blank" rel="noopener">② 新建 Web Service →</a>
+      </div>
+    </div>
+
+    <div class="pcard">
+      <h3>Hugging Face Spaces <span class="free">免费</span></h3>
+      <p class="spec">
+        CPU Basic：<b>2 vCPU / 16GB 内存</b>，额度比 Render 大方<br>
+        支持 <b>Docker</b>，本项目已带 Dockerfile<br>
+        缺点：免费档<b>只能公开</b>，国内访问偏慢
+      </p>
+      <div class="btns">
+        <a class="btn" href="https://huggingface.co/join" target="_blank" rel="noopener">① 注册 HF →</a>
+        <a class="btn ghost" href="https://huggingface.co/new-space" target="_blank" rel="noopener">② 新建 Space（选 Docker）→</a>
+      </div>
+    </div>
+
+  </div>
+
+  <h2>全部平台对比 <small>红字是坑，别踩</small></h2>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr>
+          <th>平台</th>
+          <th>免费额度</th>
+          <th>要绑卡</th>
+          <th>常驻进程</th>
+          <th>数据持久</th>
+          <th>结论</th>
+          <th>直达</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b>Render</b></td>
+          <td>512MB / 750 小时每月</td>
+          <td class="y">不用</td>
+          <td class="y">支持</td>
+          <td class="n">临时（15 分钟休眠即清）</td>
+          <td><span class="tag s">推荐</span></td>
+          <td><a href="https://dashboard.render.com/register" target="_blank" rel="noopener">注册</a> ·
+              <a href="https://render.com/pricing" target="_blank" rel="noopener">定价</a> ·
+              <a href="https://render.com/docs/free" target="_blank" rel="noopener">免费说明</a></td>
+        </tr>
+        <tr>
+          <td><b>Hugging Face Spaces</b></td>
+          <td>2 vCPU / 16GB</td>
+          <td class="y">不用</td>
+          <td class="y">Docker</td>
+          <td class="n">重启即丢</td>
+          <td><span class="tag s">推荐</span></td>
+          <td><a href="https://huggingface.co/join" target="_blank" rel="noopener">注册</a> ·
+              <a href="https://huggingface.co/new-space" target="_blank" rel="noopener">建 Space</a> ·
+              <a href="https://huggingface.co/docs/hub/spaces-sdks-docker" target="_blank" rel="noopener">Docker 文档</a></td>
+        </tr>
+        <tr>
+          <td><b>Railway</b></td>
+          <td>注册送 $5（30 天有效）</td>
+          <td class="y">不用</td>
+          <td class="y">支持</td>
+          <td class="n">临时</td>
+          <td><span class="tag m">只够试一个月</span></td>
+          <td><a href="https://railway.com/" target="_blank" rel="noopener">注册</a> ·
+              <a href="https://railway.com/pricing" target="_blank" rel="noopener">定价</a></td>
+        </tr>
+        <tr>
+          <td><b>Zeabur</b></td>
+          <td class="n">Free 档额度为 0</td>
+          <td class="y">不用</td>
+          <td>—</td>
+          <td>—</td>
+          <td><span class="tag x">免费版部署不了</span></td>
+          <td><a href="https://zeabur.com/" target="_blank" rel="noopener">官网</a> ·
+              <a href="https://zeabur.com/pricing" target="_blank" rel="noopener">定价</a></td>
+        </tr>
+        <tr>
+          <td><b>Koyeb</b></td>
+          <td class="n">免费 nano 已取消</td>
+          <td class="n">要卡</td>
+          <td class="y">支持</td>
+          <td>—</td>
+          <td><span class="tag x">不建议</span></td>
+          <td><a href="https://www.koyeb.com/pricing" target="_blank" rel="noopener">定价</a></td>
+        </tr>
+        <tr>
+          <td>Vercel</td>
+          <td>静态 + Serverless</td>
+          <td class="y">不用</td>
+          <td class="n">不支持常驻</td>
+          <td class="n">无</td>
+          <td><span class="tag x">本项目不适用</span></td>
+          <td><a href="https://vercel.com/signup" target="_blank" rel="noopener">注册</a></td>
+        </tr>
+        <tr>
+          <td>Netlify</td>
+          <td>300 积分/月</td>
+          <td class="y">不用</td>
+          <td class="n">不支持常驻</td>
+          <td class="n">无</td>
+          <td><span class="tag x">本项目不适用</span></td>
+          <td><a href="https://app.netlify.com/signup" target="_blank" rel="noopener">注册</a></td>
+        </tr>
+        <tr>
+          <td>Cloudflare Pages</td>
+          <td>静态无限</td>
+          <td class="y">不用</td>
+          <td class="n">仅 Workers</td>
+          <td class="n">无</td>
+          <td><span class="tag x">本项目不适用</span></td>
+          <td><a href="https://dash.cloudflare.com/sign-up" target="_blank" rel="noopener">注册</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="warnbox">
+    <b>⚠️ 更正两条流传很广的错信息：</b><br>
+    ① 网上很多文章说「Zeabur 每月送 $5 额度」——查了官方定价页，Free 档的每日/每月额度都是 <b>0</b>、可绑域名也是 0，实际最低要 Dev 计划 $5/月（前 14 天免费）。<br>
+    ② 说「Railway 永久免费」也不对——现在只有 30 天 $5 试用，之后 Free 计划要 $1/月。
+  </div>
+
+  <h2>Render 部署步骤 <small>照着点，全程不用绑卡</small></h2>
+  <ol class="steps">
+    <li><b>点上面「① 注册 Render」</b><span>直接用 GitHub 账号登录最快，不用单独填资料。</span></li>
+    <li><b>把项目传到 GitHub</b><span>新建一个空仓库，把 <code>做饭吧App v5</code> 里的文件推上去。项目自带 <code>.gitignore</code>，会自动排除 <code>data/db.json</code> 和用户上传的图片。</span></li>
+    <li><b>点「② 新建 Web Service」，选你的仓库 → Connect</b><span>可能会先让你授权 Render 读取 GitHub 仓库，点同意即可。</span></li>
+    <li><b>照这张表填</b><span>
+      Name：<code>zuofanba</code>（决定网址前缀）<br>
+      Language：<code>Node</code><br>
+      Build Command：<code>npm install</code><br>
+      Start Command：<code>npm start</code><br>
+      Instance Type：<code>Free</code> ← 千万别选错，选错就要钱
+    </span></li>
+    <li><b>点 Deploy Web Service，等状态变 Live</b><span>首次构建约 2–4 分钟。</span></li>
+    <li><b>复制页面顶部的网址</b><span>形如 <code>https://zuofanba-xxxx.onrender.com</code>，这就是你要的、能直接点开的链接。手机打开后「添加到主屏幕」就变成 App 图标。</span></li>
+  </ol>
+
+  <div class="note">
+    <b>不想用 GitHub？</b>也可以用 Docker 部署：仓库里已经有 <code>Dockerfile</code>，创建服务时 Language 选 <code>Docker</code>，其余全部留空即可。
+  </div>
+
+  <h2>必须知道的三个限制</h2>
+  <div class="note">
+    <b>1. 会休眠。</b>15 分钟没人访问就睡，下次打开要等约 1 分钟（会显示加载页）。<br>
+    <b>2. 数据会丢。</b>免费实例的磁盘是临时的，重新部署 / 重启 / 休眠唤醒都会清空 <code>data/db.json</code> 和上传的图片。免费档<b>不支持</b>挂持久磁盘（那是付费功能）。<br>
+    <b>3. 每月 750 小时。</b>整月 24 小时不停约需 720 小时，几乎吃满。所以别用定时 ping 硬撑着不休眠，会超额度。
+  </div>
+
+  <h2>想让数据不丢？两条路</h2>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>做法</th><th>操作</th><th>成本</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b>挂持久卷</b><br><span style="color:#9aa3b2;font-size:12.5px">最省事，项目已支持</span></td>
+          <td>Render 服务升级到 Starter → Disks → 挂到 <code>/var/data</code>；环境变量设
+              <code>DATA_DIR=/var/data</code>、<code>UPLOAD_DIR=/var/data/uploads</code></td>
+          <td>约 $7/月 + $0.25/GB/月</td>
+        </tr>
+        <tr>
+          <td><b>换外部数据库</b><br><span style="color:#9aa3b2;font-size:12.5px">免费额度够用</span></td>
+          <td>用 MongoDB Atlas 免费档（512MB），改 <code>server.js</code> 里的
+              <code>loadDB</code> / <code>saveNow</code> 两个函数即可，其他代码不用动</td>
+          <td class="y">免费</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>MongoDB Atlas 接入 <small>已写进代码，填个环境变量就行</small></h2>
+  <p class="spec" style="color:#9aa3b2">
+    代码已经接好了，<b style="color:#dfe3ea">不用改一行代码</b>：配上 <code>MONGODB_URI</code> 就走云端，不配就还是本地文件。
+    连不上也会自动回退，不会让网站打不开。
+  </p>
+  <div class="btns" style="margin:14px 0 18px">
+    <a class="btn" href="https://www.mongodb.com/cloud/atlas/register" target="_blank" rel="noopener">注册 MongoDB Atlas（免费 M0）→</a>
+    <a class="btn ghost" href="https://cloud.mongodb.com/" target="_blank" rel="noopener">控制台 →</a>
+  </div>
+  <ol class="steps">
+    <li><b>注册并创建集群</b><span>选 <b>M0 Free</b>（512MB 永久免费），区域选 Singapore 或 Hong Kong，延迟更低。</span></li>
+    <li><b>Network Access 放行</b><span>加 <code>0.0.0.0/0</code>。免费托管平台出口 IP 不固定，只能全放开，安全性靠强密码。</span></li>
+    <li><b>Database Access 建用户</b><span>用密码认证，点 Autogenerate 生成强密码并保存好。</span></li>
+    <li><b>复制连接串</b><span>Connect → Drivers，形如 <code>mongodb+srv://user:pass@cluster0.xxx.mongodb.net/</code>，密码里的特殊字符要 URL 编码。</span></li>
+    <li><b>填进托管平台的环境变量</b><span><code>MONGODB_URI</code> = 连接串。可选：<code>MONGODB_DB</code>（默认 zuofanba）、<code>MONGODB_COLLECTION</code>（默认 appstate）。</span></li>
+    <li><b>看启动日志确认</b><span>出现 <code>[store] MongoDB 已连接</code> 就成功了；出现「回退本地 JSON」说明连接有问题。</span></li>
+  </ol>
+  <div class="note">
+    <b>数据怎么存的？</b>整份业务数据作为一个文档存在 <code>zuofanba.appstate</code> 里（<code>_id: "singleton"</code>），
+    写入做了 120ms 防抖合并。好处是 30 多个接口一行都不用改；家务级数据量完全够用。
+    详细说明见同目录 <b>MONGODB.md</b>。
+  </div>
+
+  <h2>零注册方案 <small>跑自己电脑上，完全免费</small></h2>
+  <p class="spec" style="color:#9aa3b2">
+    如果你只是家里人用、不想注册任何平台：装好 Node.js 18+，在项目目录执行
+    <code>npm start</code>，本机打开 <code>http://localhost:3000</code>；
+    手机连同一个 WiFi，访问 <code>http://你电脑IP:3000</code> 就行。
+    想临时让外网也能进，在电脑上跑 <code>cloudflared tunnel --url http://localhost:3000</code>，
+    会给你一个 <code>https://xxx.trycloudflare.com</code> 的临时地址（电脑关了就没）。
+  </p>
+  <div class="btns" style="margin-top:12px">
+    <a class="btn ghost" href="https://nodejs.org/zh-cn" target="_blank" rel="noopener">下载 Node.js →</a>
+    <a class="btn ghost" href="https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/" target="_blank" rel="noopener">下载 cloudflared →</a>
+  </div>
+
+  <div class="footer">
+    详细步骤、环境变量、常见问题都在同目录的 <b>DEPLOY.md</b> 里；
+    MongoDB 接入细节（连接串、排错、数据结构）在 <b>MONGODB.md</b> 里。<br>
+    HF Spaces 部署前记得把 <b>README-hf-spaces.md</b> 改名成 <b>README.md</b>，否则容器起不来。<br>
+    本页额度信息核实日期 2026-11-12，来源为各平台官方定价页与官方文档。
+  </div>
+
+</div>
+</body>
+</html>
